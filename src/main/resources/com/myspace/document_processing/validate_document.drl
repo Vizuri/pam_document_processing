@@ -1,0 +1,58 @@
+package com.myspace.document_processing;
+
+import com.myspace.document_processing.Document;
+import com.myspace.document_processing.Error;
+
+import org.kie.api.runtime.process.WorkflowProcessInstance;
+
+rule "validate document type is bad"
+	dialect "mvel"
+	ruleflow-group "validate"
+when
+	$inputDoc : Document( type == null )
+then
+	insert (new Error("Invalid Document Type") );
+	
+	$inputDoc.setStatus("validation completed. Document type invalid");
+	
+	System.out.println("Validation: Document is NOT valid ");
+end
+
+rule "validate document type is good"
+	dialect "mvel"
+	ruleflow-group "validate"
+when
+	$inputDoc : Document( type != null )
+then
+	
+	$inputDoc.setStatus("validation completed. Document type valid");
+	
+	System.out.println("Validation: Document type is valid");
+end
+
+rule "validation has errors"
+	dialect "mvel"
+	ruleflow-group "validate"
+	salience -1
+when
+	Error(description != null)
+	$process : WorkflowProcessInstance( )
+then
+	
+	$process.setVariable( "valid_doc", false );
+	
+	System.out.println("Validation: Found errors, document is NOT valid");
+end
+
+rule "validate has no errors"
+	dialect "mvel"
+	ruleflow-group "validate"
+when
+	not Error ()
+	$process : WorkflowProcessInstance( )
+then
+	
+	$process.setVariable( "valid_doc", true );
+	
+	System.out.println("Validation: No Errors, document IS valid");
+end

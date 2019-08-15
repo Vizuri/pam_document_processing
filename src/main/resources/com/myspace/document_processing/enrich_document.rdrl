@@ -1,0 +1,12 @@
+package com.myspace.document_processing;
+
+rule "enrich_document"
+	dialect "mvel"
+	agenda-group "enrich"
+	when
+		$doc : Document( type == "soccer" )
+	then
+		$doc.setClassification( "sport" );
+		$doc.setStatus( "document classified" );
+		System.out.println("Set classification: " + $doc.getClassification( ) );
+end
